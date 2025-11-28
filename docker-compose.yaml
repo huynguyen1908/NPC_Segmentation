@@ -1,0 +1,38 @@
+#version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8
+    container_name: mysql_npc_segmentation
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: npc_segmentation
+      MYSQL_DEFAULT_AUTHENTICATION_PLUGIN: mysql_native_password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./db:/docker-entrypoint-initdb.d  # nếu bạn muốn import file .sql
+#    command: --default-authentication-plugin=mysql_native_password
+
+  backend:
+    build: .
+    container_name: npc_backend
+    restart: always
+    ports:
+      - "8087:8087"   # BE chạy đúng port bạn khai báo
+    depends_on:
+      - mysql
+    environment:
+      # DATABASE CONFIG FOR DOCKER
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/npc_segmentation?useSSL=false&serverTimezone=UTC&useUnicode=true&characterEncoding=UTF-8&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+
+      # GEMINI API KEY
+      GEMINI_API_KEY: AIzaSyAW5gaxZvUXrNW07BgvaQNTeH3UvtgWjwc
+
+
+volumes:
+  mysql_data:
